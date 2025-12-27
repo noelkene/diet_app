@@ -23,7 +23,6 @@ export default function RootLayout({
                     <Providers>
                         <header className="bg-white shadow-sm p-4 sticky top-0 z-10">
                             <div className="max-w-4xl mx-auto flex justify-between items-center">
-                                <h1 className="text-xl font-bold text-teal-600"><a href="/">SmartDiet</a></h1>
                                 <NavBar />
                             </div>
                         </header>
