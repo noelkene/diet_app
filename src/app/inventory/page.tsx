@@ -3,26 +3,31 @@
 import { useState, useEffect } from 'react';
 import { Ingredient } from '@/lib/types';
 import { identifyIngredientsAction } from '@/lib/gemini';
+import { loadData, saveData } from '../actions';
 
 export default function InventoryPage() {
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Load from localStorage on mount
+    // Load from Cloud Storage on mount
     useEffect(() => {
-        const saved = localStorage.getItem('inventory');
-        if (saved) {
-            setIngredients(JSON.parse(saved));
-        }
+        loadData<Ingredient[]>('inventory.json', [])
+            .then(data => {
+                setIngredients(data);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setIsLoading(false);
+            });
     }, []);
 
-    // Save to localStorage on change
-    useEffect(() => {
-        if (ingredients.length > 0) {
-            localStorage.setItem('inventory', JSON.stringify(ingredients));
-        }
-    }, [ingredients]);
+    const saveToCloud = async (newData: Ingredient[]) => {
+        setIngredients(newData);
+        await saveData('inventory.json', newData);
+    };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -38,7 +43,13 @@ export default function InventoryPage() {
 
         try {
             const newIngredients = await identifyIngredientsAction(formData);
-            setIngredients(prev => [...prev, ...newIngredients]);
+
+            if (newIngredients.length === 0) {
+                setError('No food items identified. Try a clearer photo or a different angle.');
+            } else {
+                const updated = [...ingredients, ...newIngredients];
+                await saveToCloud(updated);
+            }
         } catch (err) {
             console.error(err);
             setError('Failed to analyze images. Please try again.');
@@ -48,14 +59,9 @@ export default function InventoryPage() {
         }
     };
 
-    const removeItem = (index: number) => {
+    const removeItem = async (index: number) => {
         const newIngredients = ingredients.filter((_, i) => i !== index);
-        setIngredients(newIngredients);
-        // Explicit save for deletion if useEffect doesn't catch empty? 
-        // useEffect handles it unless it's empty, but localstorage.setItem works for empty arrays.
-        // The useEffect condition `if (ingredients.length > 0)` prevents clearing.
-        // We should fix that logic or manually save here.
-        localStorage.setItem('inventory', JSON.stringify(newIngredients));
+        await saveToCloud(newIngredients);
     };
 
     return (
@@ -84,7 +90,8 @@ export default function InventoryPage() {
                     const name = (form.elements.namedItem('name') as HTMLInputElement).value;
                     const qty = (form.elements.namedItem('qty') as HTMLInputElement).value;
                     if (name) {
-                        setIngredients([...ingredients, { name, quantity: qty || 'some', category: 'Manual' }]);
+                        const updated = [...ingredients, { name, quantity: qty || 'some', category: 'Manual' }];
+                        saveToCloud(updated);
                         form.reset();
                     }
                 }} className="flex gap-2 p-4 bg-gray-50 rounded-lg">
@@ -94,7 +101,9 @@ export default function InventoryPage() {
                 </form>
             </div>
             {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+                <div className="bg-red-50 text-red-600 p-4 rounded-lg flex justify-between items-center">
+                    <span>{error}</span>
+                    <button onClick={() => setError(null)} className="text-red-400 hover:text-red-700">✕</button>
                 </div>
             )}
 

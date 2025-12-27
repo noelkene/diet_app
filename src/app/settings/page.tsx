@@ -1,22 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { loadData, saveData } from '../actions';
 import { UserProfile, DEFAULT_PROFILES } from '@/lib/types';
 
 export default function SettingsPage() {
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const saved = localStorage.getItem('user-profiles');
-        if (saved) {
-            setProfiles(JSON.parse(saved));
-        } else {
-            setProfiles(DEFAULT_PROFILES);
-        }
+        loadData<UserProfile[]>('profiles.json', [])
+            .then(data => {
+                if (data && data.length > 0) {
+                    setProfiles(data);
+                } else {
+                    setProfiles(DEFAULT_PROFILES);
+                }
+                setIsLoading(false);
+            })
+            .catch(e => {
+                console.error(e);
+                setIsLoading(false);
+            });
     }, []);
 
-    const saveProfiles = () => {
-        localStorage.setItem('user-profiles', JSON.stringify(profiles));
+    const saveProfiles = async () => {
+        setIsLoading(true);
+        await saveData('profiles.json', profiles);
+        setIsLoading(false);
         alert('Profiles saved! Future recipe suggestions will use these settings.');
     };
 

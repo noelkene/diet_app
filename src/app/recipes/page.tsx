@@ -1,23 +1,37 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Ingredient, Recipe } from '@/lib/types';
-import { generateMealPlanAction } from '@/lib/gemini';
+import { loadData, saveData } from '../actions';
+import { Ingredient, Recipe, ScheduledMeal } from '@/lib/types';
+import { generateMealPlanAction, parseRecipeAction, parseRecipeImageAction } from '@/lib/gemini';
 
 export default function RecipesPage() {
     const [inventory, setInventory] = useState<Ingredient[]>([]);
     const [recipes, setRecipes] = useState<Recipe[]>([]);
+    const [rejected, setRejected] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+
+    // Import State
+    const [importMode, setImportMode] = useState<'text' | 'image'>('text');
+    const [importText, setImportText] = useState('');
+    const [importImage, setImportImage] = useState<File | null>(null);
+
+    // Scheduling State
+    const [schedulingRecipeId, setSchedulingRecipeId] = useState<string | null>(null);
+    const [selectedDate, setSelectedDate] = useState('');
 
     useEffect(() => {
-        const savedInv = localStorage.getItem('inventory');
-        if (savedInv) {
-            setInventory(JSON.parse(savedInv));
-        }
-
-        // Check for saved recipes too
-        const savedRecipes = localStorage.getItem('recipes');
-        if (savedRecipes) setRecipes(JSON.parse(savedRecipes));
+        // Load initial data
+        Promise.all([
+            loadData<Ingredient[]>('inventory.json', []),
+            loadData<Recipe[]>('recipes.json', []),
+            loadData<string[]>('rejected.json', [])
+        ]).then(([inv, rec, rej]) => {
+            setInventory(inv);
+            setRecipes(rec);
+            setRejected(rej);
+        });
     }, []);
 
     const generateRecipes = async () => {
@@ -27,9 +41,9 @@ export default function RecipesPage() {
         }
         setIsLoading(true);
         try {
-            const newRecipes = await generateMealPlanAction(inventory);
+            const newRecipes = await generateMealPlanAction(inventory, undefined, rejected);
             setRecipes(newRecipes);
-            localStorage.setItem('recipes', JSON.stringify(newRecipes));
+            await saveData('recipes.json', newRecipes);
         } catch (e) {
             console.error(e);
             alert('Failed to generate recipes');
@@ -38,20 +52,209 @@ export default function RecipesPage() {
         }
     };
 
+    const handleImport = async () => {
+        setIsLoading(true);
+        setIsImporting(false);
+        try {
+            let recipe: Recipe | null = null;
+
+            if (importMode === 'text') {
+                if (!importText.trim()) return;
+                recipe = await parseRecipeAction(importText);
+            } else if (importMode === 'image') {
+                if (!importImage) return;
+                const formData = new FormData();
+                formData.append('image', importImage);
+                recipe = await parseRecipeImageAction(formData);
+            }
+
+            if (recipe) {
+                const updated = [recipe, ...recipes];
+                setRecipes(updated);
+                await saveData('recipes.json', updated);
+                setImportText('');
+                setImportImage(null);
+                alert('Recipe imported successfully!');
+            } else {
+                alert('Failed to extract recipe. Please try again.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error during import');
+
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const addToShoppingList = async (ingredients: string[], silent = false) => {
+        try {
+            const currentList = await loadData<any[]>('shopping-list.json', []);
+            // Simple check to avoid exact dupes if unchecked
+            const existingNames = new Set(currentList.map(i => i.name));
+            const newItems = ingredients
+                .filter(name => !existingNames.has(name))
+                .map(ing => ({ name: ing, checked: false }));
+
+            if (newItems.length === 0) {
+                if (!silent) alert('Ingredients already in list!');
+                return;
+            }
+
+            const updated = [...currentList, ...newItems];
+            await saveData('shopping-list.json', updated);
+            if (!silent) alert(`Added ${newItems.length} items to Shopping List!`);
+        } catch (e) {
+            console.error(e);
+            if (!silent) alert('Failed to update shopping list');
+        }
+    };
+
+    const logMeal = async (recipeTitle: string) => {
+        const rating = prompt('Rate this meal (1-5):');
+        if (rating) {
+            const notes = prompt('Any notes/tips for next time?');
+            try {
+                const history = await loadData<any[]>('history.json', []);
+                history.unshift({
+                    date: new Date().toISOString(),
+                    recipeTitle,
+                    rating: parseInt(rating) || 3,
+                    notes: notes || ''
+                });
+                await saveData('history.json', history);
+                alert('Meal logged! Check the History page.');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    };
+
+    const scheduleMeal = async (recipe: Recipe) => {
+        if (!selectedDate) return;
+        try {
+            const schedule = await loadData<ScheduledMeal[]>('schedule.json', []);
+
+            // Check for conflict
+            const existing = schedule.find(s => s.date === selectedDate);
+            if (existing) {
+                alert(`There is already a meal scheduled for ${selectedDate}: "${existing.recipeTitle}". \nPlease remove it from the Home page first.`);
+                return;
+            }
+
+            const newSchedule = [...schedule, {
+                date: selectedDate,
+                recipeId: recipe.id,
+                recipeTitle: recipe.title
+            }];
+
+            await saveData('schedule.json', newSchedule);
+            setSchedulingRecipeId(null);
+
+            // Auto-add to shopping list
+            await addToShoppingList(recipe.ingredients, true); // Pass true to suppress the extra alert inside, or just handle manually here? 
+            // Better: update addToShoppingList to return success boolean and handle alerting here.
+
+            alert(`Scheduled for ${selectedDate}! Ingredients added to Shopping List.`);
+        } catch (e) {
+            console.error(e);
+            alert('Failed to schedule meal');
+        }
+    };
+
+    const dismissRecipe = async (recipeId: string) => {
+        if (confirm('Dismiss this recipe?')) {
+            const newRecipes = recipes.filter(r => r.id !== recipeId);
+            setRecipes(newRecipes);
+            await saveData('recipes.json', newRecipes);
+        }
+    };
+
+    const blockRecipe = async (recipe: Recipe) => {
+        if (confirm(`Block similar recipes to "${recipe.title}" in the future?`)) {
+            const newRejected = [...rejected, recipe.title];
+            setRejected(newRejected);
+            await saveData('rejected.json', newRejected);
+
+            // Also dismiss it
+            const newRecipes = recipes.filter(r => r.id !== recipe.id);
+            setRecipes(newRecipes);
+            await saveData('recipes.json', newRecipes);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Meal Suggestions</h1>
-                <button
-                    onClick={generateRecipes}
-                    className="btn btn-primary"
-                    disabled={isLoading}
-                >
-                    {isLoading ? 'Thinking...' : '✨ Generate Ideas'}
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsImporting(!isImporting)}
+                        className="btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                        📝 Import Recipe
+                    </button>
+                    <button
+                        onClick={generateRecipes}
+                        className="btn btn-primary"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Thinking...' : '✨ Generate Ideas'}
+                    </button>
+                </div>
             </div>
 
-            {recipes.length === 0 && !isLoading && (
+            {isImporting && (
+                <div className="bg-white p-6 rounded-lg shadow-md border border-indigo-100 mb-6">
+                    <h3 className="text-lg font-semibold mb-4">Import Recipe</h3>
+
+                    <div className="flex gap-4 mb-4 border-b border-gray-200">
+                        <button
+                            onClick={() => setImportMode('text')}
+                            className={`pb-2 px-1 text-sm font-medium transition-colors ${importMode === 'text' ? 'text-teal-600 border-b-2 border-teal-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Text / URL
+                        </button>
+                        <button
+                            onClick={() => setImportMode('image')}
+                            className={`pb-2 px-1 text-sm font-medium transition-colors ${importMode === 'image' ? 'text-teal-600 border-b-2 border-teal-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            📸 From Photo
+                        </button>
+                    </div>
+
+                    {importMode === 'text' ? (
+                        <>
+                            <p className="text-sm text-gray-500 mb-2">Paste a recipe URL or full text below:</p>
+                            <textarea
+                                value={importText}
+                                onChange={(e) => setImportText(e.target.value)}
+                                className="w-full h-32 p-3 border rounded-md mb-4 text-sm focus:ring-2 focus:ring-teal-500 outline-none"
+                                placeholder="https://example.com/recipe... or Paste text here..."
+                            ></textarea>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-sm text-gray-500 mb-2">Upload a photo of a cookbook, card, or screen:</p>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => setImportImage(e.target.files?.[0] || null)}
+                                className="w-full p-2 border rounded-md mb-4 text-sm bg-gray-50"
+                            />
+                        </>
+                    )}
+
+                    <div className="flex justify-end gap-2">
+                        <button onClick={() => setIsImporting(false)} className="btn text-gray-500">Cancel</button>
+                        <button onClick={handleImport} className="btn btn-primary" disabled={isLoading}>
+                            {isLoading ? 'Analyzing...' : 'Analyze & Save'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {recipes.length === 0 && !isLoading && !isImporting && (
                 <div className="text-center py-12 text-gray-500">
                     <p>No recipes yet.</p>
                     <p>Make sure your inventory is up to date, then click Generate.</p>
@@ -140,48 +343,66 @@ export default function RecipesPage() {
 
                         <div className="bg-gray-50 px-6 py-4 border-t border-gray-100 flex flex-wrap gap-3">
                             <button
-                                onClick={() => {
-                                    const currentList = JSON.parse(localStorage.getItem('shopping-list') || '[]');
-                                    const newItems = recipe.ingredients.map(ing => ({ name: ing, checked: false }));
-                                    localStorage.setItem('shopping-list', JSON.stringify([...currentList, ...newItems]));
-                                    alert('Added ingredients to Shopping List!');
-                                }}
+                                onClick={() => addToShoppingList(recipe.ingredients)}
                                 className="btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 shadow-sm"
                             >
                                 🛒 Add to List
                             </button>
                             <button
-                                onClick={() => {
-                                    const rating = prompt('Rate this meal (1-5):');
-                                    if (rating) {
-                                        const notes = prompt('Any notes/tips for next time?');
-                                        const history = JSON.parse(localStorage.getItem('meal-history') || '[]');
-                                        history.unshift({
-                                            date: new Date().toISOString(),
-                                            recipeTitle: recipe.title,
-                                            rating: parseInt(rating) || 3,
-                                            notes: notes || ''
-                                        });
-                                        localStorage.setItem('meal-history', JSON.stringify(history));
-                                        alert('Meal logged!');
-                                    }
-                                }}
+                                onClick={() => logMeal(recipe.title)}
                                 className="btn bg-teal-600 text-white hover:bg-teal-700 shadow-sm"
                             >
                                 ✅ Cooked This
                             </button>
-                            <button
-                                onClick={() => {
-                                    if (confirm('Dismiss this recipe?')) {
-                                        const newRecipes = recipes.filter(r => r.id !== recipe.id);
-                                        setRecipes(newRecipes);
-                                        localStorage.setItem('recipes', JSON.stringify(newRecipes));
-                                    }
-                                }}
-                                className="btn text-gray-400 hover:text-red-600 hover:bg-red-50 ml-auto"
-                            >
-                                Dismiss
-                            </button>
+
+                            {/* Scheduling UI */}
+                            <div className="relative">
+                                {schedulingRecipeId === recipe.id ? (
+                                    <div className="flex items-center gap-2 bg-white border border-teal-200 rounded p-1 absolute bottom-full mb-2 left-0 shadow-lg z-10 w-64">
+                                        <input
+                                            type="date"
+                                            className="border rounded px-2 py-1 text-sm flex-grow"
+                                            value={selectedDate}
+                                            onChange={(e) => setSelectedDate(e.target.value)}
+                                        />
+                                        <button
+                                            onClick={() => scheduleMeal(recipe)}
+                                            className="bg-teal-600 text-white text-xs px-2 py-1 rounded"
+                                        >
+                                            Save
+                                        </button>
+                                        <button onClick={() => setSchedulingRecipeId(null)} className="text-gray-400 hover:text-gray-600 px-1">✕</button>
+                                    </div>
+                                ) : null}
+                                <button
+                                    onClick={() => {
+                                        setSchedulingRecipeId(recipe.id);
+                                        // Default to tomorrow
+                                        const tmrw = new Date();
+                                        tmrw.setDate(tmrw.getDate() + 1);
+                                        setSelectedDate(tmrw.toISOString().split('T')[0]);
+                                    }}
+                                    className="btn bg-indigo-50 text-indigo-700 hover:bg-indigo-100 shadow-sm"
+                                >
+                                    📅 Schedule
+                                </button>
+                            </div>
+
+                            <div className="ml-auto flex gap-2">
+                                <button
+                                    onClick={() => blockRecipe(recipe)}
+                                    className="btn text-gray-400 hover:text-red-700 hover:bg-red-50"
+                                    title="Never suggest this again"
+                                >
+                                    🚫 Block
+                                </button>
+                                <button
+                                    onClick={() => dismissRecipe(recipe.id)}
+                                    className="btn text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                                >
+                                    Dismiss
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}

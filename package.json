@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.18.0",
     "@google-cloud/vertexai": "^1.10.0",
     "@google/generative-ai": "latest",
     "ai": "latest",

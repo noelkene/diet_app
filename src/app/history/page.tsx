@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { loadData } from '../actions';
 import { Recipe } from '@/lib/types';
 
 interface HistoryItem {
@@ -16,8 +17,9 @@ export default function HistoryPage() {
     // Here we'll show the log. The "Cooked This" button in recipes should redirect here or open a modal.
 
     useEffect(() => {
-        const saved = localStorage.getItem('meal-history');
-        if (saved) setHistory(JSON.parse(saved));
+        loadData<HistoryItem[]>('history.json', [])
+            .then(data => setHistory(data))
+            .catch(e => console.error(e));
     }, []);
 
     return (

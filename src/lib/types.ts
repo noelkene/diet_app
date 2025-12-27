@@ -24,6 +24,12 @@ export interface ShoppingItem {
     checked: boolean;
 }
 
+export interface ScheduledMeal {
+    date: string; // YYYY-MM-DD
+    recipeId: string;
+    recipeTitle: string;
+}
+
 export type UserProfileKey = 'wife' | 'son' | 'dad';
 
 export interface UserProfile {
