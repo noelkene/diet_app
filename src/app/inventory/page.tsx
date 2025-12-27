@@ -25,25 +25,26 @@ export default function InventoryPage() {
     }, [ingredients]);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
         setIsAnalyzing(true);
         setError(null);
 
         const formData = new FormData();
-        formData.append('image', file);
+        Array.from(files).forEach((file) => {
+            formData.append('image', file);
+        });
 
         try {
             const newIngredients = await identifyIngredientsAction(formData);
-            // Merge with existing or replace? Let's append but check for dupes in a real app.
-            // For now, just append.
             setIngredients(prev => [...prev, ...newIngredients]);
         } catch (err) {
             console.error(err);
-            setError('Failed to analyze image. Please try again.');
+            setError('Failed to analyze images. Please try again.');
         } finally {
             setIsAnalyzing(false);
+            e.target.value = ''; // Reset
         }
     };
 
@@ -67,6 +68,7 @@ export default function InventoryPage() {
                         <input
                             type="file"
                             accept="image/*"
+                            multiple
                             capture="environment"
                             className="hidden"
                             onChange={handleFileUpload}
@@ -105,37 +107,41 @@ export default function InventoryPage() {
             )}
 
             {ingredients.length > 0 ? (
-                <div className="grid gap-4">
-                    {ingredients.map((item, idx) => (
-                        <div key={idx} className="card flex justify-between items-center p-4">
-                            <div>
-                                <p className="font-medium">{item.name}</p>
-                                <p className="text-sm text-gray-500">{item.quantity}</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
-                                    {item.category}
-                                </span>
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {ingredients.map((item, idx) => (
+                            <div key={idx} className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex justify-between items-center group hover:shadow-md transition-shadow">
+                                <div>
+                                    <p className="font-semibold text-gray-800">{item.name}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-xs font-mono bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                                            {item.quantity}
+                                        </span>
+                                        <span className="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full">
+                                            {item.category}
+                                        </span>
+                                    </div>
+                                </div>
                                 <button
                                     onClick={() => removeItem(idx)}
-                                    className="text-gray-400 hover:text-red-500"
+                                    className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-2"
                                     aria-label="Remove item"
                                 >
                                     ✕
                                 </button>
                             </div>
-                        </div>
-                    ))}
-                    <div className="text-center pt-4">
-                        <a href="/recipes" className="btn btn-primary w-full md:w-auto">
-                            Suggested Recipes →
+                        ))}
+                    </div>
+                    <div className="text-center pt-8">
+                        <a href="/recipes" className="btn btn-primary shadow-lg shadow-teal-200 transaction-transform hover:-translate-y-0.5">
+                            ✨ Get Recipe Suggestions →
                         </a>
                     </div>
-                </div>
+                </>
             ) : (
                 !isAnalyzing && (
-                    <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                        <p className="text-lg mb-2">Your inventory is empty.</p>
+                    <div className="text-center py-16 text-gray-400 bg-white rounded-xl border-2 border-dashed border-gray-200">
+                        <p className="text-xl mb-2 font-medium">Your inventory is empty 🍂</p>
                         <p>Upload a photo of your shelves to get started!</p>
                     </div>
                 )

@@ -24,4 +24,17 @@ export interface ShoppingItem {
     checked: boolean;
 }
 
-export type UserProfile = 'wife' | 'son' | 'dad';
+export type UserProfileKey = 'wife' | 'son' | 'dad';
+
+export interface UserProfile {
+    id: UserProfileKey;
+    name: string;
+    dietaryNeeds: string;
+}
+
+export const DEFAULT_PROFILES: UserProfile[] = [
+    { id: 'wife', name: 'Vera (Wife)', dietaryNeeds: 'Low carb, Low sugar (Neuropathy/Pre-diabetes)' },
+    { id: 'son', name: 'Hiro (Son)', dietaryNeeds: 'High calorie, filling (Teenager)' },
+    { id: 'dad', name: 'Noel (Me)', dietaryNeeds: 'Weight loss focused' }
+];
+

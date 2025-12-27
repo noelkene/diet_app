@@ -22,9 +22,10 @@ export default function RootLayout({
                         <div className="max-w-4xl mx-auto flex justify-between items-center">
                             <h1 className="text-xl font-bold text-teal-600">SmartDiet</h1>
                             <nav className="space-x-4 text-sm font-medium text-gray-500">
-                                <a href="/" className="hover:text-teal-600">Home</a>
-                                <a href="/inventory" className="hover:text-teal-600">Inventory</a>
-                                <a href="/recipes" className="hover:text-teal-600">Recipes</a>
+                                <a href="/" className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700 transition-colors">Home</a>
+                                <a href="/inventory" className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700 transition-colors">Inventory</a>
+                                <a href="/recipes" className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700 transition-colors">Recipes</a>
+                                <a href="/settings" className="px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700 transition-colors">Settings</a>
                             </nav>
                         </div>
                     </header>
