@@ -15,7 +15,7 @@ export default function OnboardingChecklist({ hasInventory, hasSchedule, isDismi
 
     // Calculate progress
     const steps = [
-        { id: 'inventory', label: 'Scan your first receipt or item', completed: hasInventory, link: '/inventory/upload', action: 'Upload' },
+        { id: 'inventory', label: 'Scan your refrigerator for inventory', completed: hasInventory, link: '/inventory/upload', action: 'Scan Fridge' },
         { id: 'schedule', label: 'Generate a meal plan', completed: hasSchedule, link: '/recipes', action: 'Plan' },
         { id: 'invite', label: 'Invite a family member', completed: false, link: '/settings', action: 'Invite', manualCheck: true },
     ];

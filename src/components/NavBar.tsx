@@ -25,10 +25,13 @@ export default function NavBar() {
     return (
         <div className="flex items-center gap-4">
             <nav className="flex gap-2 overflow-x-auto pb-1 md:pb-0">
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+                <Link href="/" className="flex flex-col items-start leading-none group">
+                    <div className="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent group-hover:from-teal-500 group-hover:to-emerald-500">
                         Scantry
                     </div>
+                    <span className="text-[0.65rem] text-teal-600/80 font-medium tracking-wider uppercase ml-[1px]">
+                        Scan. Plan. Eat.
+                    </span>
                 </Link>
                 <Link href="/inventory" className={`px-4 py-2 rounded-lg text-sm transition-all whitespace-nowrap ${isActive('/inventory')}`}>
                     📦 Inventory
