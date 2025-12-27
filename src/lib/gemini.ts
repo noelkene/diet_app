@@ -5,8 +5,11 @@ import { Ingredient, Recipe } from './types';
 
 // Initialize Vertex AI
 // We assume default credentials (gcloud auth login) work locally and in Cloud Run.
-// Project ID is hardcoded based on user logs or can be env var.
-const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT || 'platinum-banner-303105';
+// Project ID from env
+const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT;
+if (!PROJECT_ID) {
+    throw new Error('GOOGLE_CLOUD_PROJECT environment variable is missing');
+}
 const LOCATION = 'us-central1';
 
 const vertexAI = new VertexAI({ project: PROJECT_ID, location: LOCATION });

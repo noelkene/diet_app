@@ -1,58 +1,54 @@
 'use server';
 
 import { Storage } from '@google-cloud/storage';
+import { getHouseholdIdForCurrentUser } from '@/lib/auth-helpers';
 
-const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT || 'platinum-banner-303105';
-const BUCKET_NAME = `diet-app-data-${PROJECT_ID}`; // e.g. diet-app-data-platinum-banner-303105
+// Initialize GCS
+const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT;
+if (!PROJECT_ID) {
+    throw new Error('GOOGLE_CLOUD_PROJECT environment variable is missing');
+}
 const storage = new Storage({ projectId: PROJECT_ID });
+const bucketName = `diet-app-data-${PROJECT_ID}`;
+const bucket = storage.bucket(bucketName);
 
-async function getBucket() {
-    const bucket = storage.bucket(BUCKET_NAME);
-    const [exists] = await bucket.exists();
-    if (!exists) {
-        try {
-            await bucket.create({ location: 'US-CENTRAL1' });
-            console.log(`Created bucket ${BUCKET_NAME}`);
-        } catch (e) {
-            // Ignore if race condition created it
-            console.log('Bucket creation check:', e);
-        }
+async function getHouseholdPath(filename: string): Promise<string> {
+    try {
+        const householdId = await getHouseholdIdForCurrentUser();
+        return `${householdId}/${filename}`;
+    } catch (e) {
+        // Fallback for unauthenticated dev/testing if needed, or rethrow
+        // For strict auth, we rethrow.
+        console.error('Auth Error:', e);
+        throw e;
     }
-    return bucket;
+}
+
+export async function saveData(filename: string, data: any) {
+    try {
+        const path = await getHouseholdPath(filename);
+        const file = bucket.file(path);
+        await file.save(JSON.stringify(data, null, 2));
+        console.log(`Saved ${path} to GCS`);
+    } catch (error) {
+        console.error('GCS Save Error:', error);
+        throw new Error('Failed to save data');
+    }
 }
 
 export async function loadData<T>(filename: string, defaultValue: T): Promise<T> {
     try {
-        const bucket = await getBucket();
-        const file = bucket.file(filename);
+        const path = await getHouseholdPath(filename);
+        const file = bucket.file(path);
         const [exists] = await file.exists();
-
         if (!exists) {
+            console.log(`File ${path} not found, returning default.`);
             return defaultValue;
         }
-
         const [content] = await file.download();
-        const json = content.toString();
-        return JSON.parse(json) as T;
-    } catch (e) {
-        console.error(`Error loading ${filename}:`, e);
+        return JSON.parse(content.toString()) as T;
+    } catch (error) {
+        console.error('GCS Load Error:', error);
         return defaultValue;
-    }
-}
-
-export async function saveData<T>(filename: string, data: T): Promise<boolean> {
-    try {
-        const bucket = await getBucket();
-        const file = bucket.file(filename);
-        await file.save(JSON.stringify(data, null, 2), {
-            contentType: 'application/json',
-            metadata: {
-                cacheControl: 'no-cache',
-            }
-        });
-        return true;
-    } catch (e) {
-        console.error(`Error saving ${filename}:`, e);
-        throw new Error(`Failed to save ${filename}`);
     }
 }
