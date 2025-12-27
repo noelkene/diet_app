@@ -7,7 +7,7 @@ import Providers from '@/components/Providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-    title: 'Smart Diet App',
+    title: 'Scantry',
     description: 'AI-powered meal planning and inventory tracking',
 };
 

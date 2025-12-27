@@ -10,28 +10,37 @@ export default function SettingsPage() {
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [inviteEmail, setInviteEmail] = useState('');
+    const [displayName, setDisplayName] = useState('');
 
     useEffect(() => {
-        loadData<UserProfile[]>('profiles.json', [])
-            .then(data => {
-                if (data && data.length > 0) {
-                    setProfiles(data);
-                } else {
-                    setProfiles(DEFAULT_PROFILES);
-                }
-                setIsLoading(false);
-            })
-            .catch(e => {
-                console.error(e);
-                setIsLoading(false);
-            });
+        Promise.all([
+            loadData<UserProfile[]>('profiles.json', []),
+            loadData<any>('settings.json', {})
+        ]).then(([profilesData, settingsData]) => {
+            if (profilesData && profilesData.length > 0) {
+                setProfiles(profilesData);
+            } else {
+                setProfiles(DEFAULT_PROFILES);
+            }
+            setDisplayName(settingsData?.displayName || '');
+            setIsLoading(false);
+        }).catch(e => {
+            console.error(e);
+            setIsLoading(false);
+        });
     }, []);
 
-    const saveProfiles = async () => {
+    const saveSettings = async () => {
         setIsLoading(true);
+        // Save profiles
         await saveData('profiles.json', profiles);
+
+        // Save display name
+        const currentSettings = await loadData<any>('settings.json', {});
+        await saveData('settings.json', { ...currentSettings, displayName });
+
         setIsLoading(false);
-        alert('Profiles saved! Future recipe suggestions will use these settings.');
+        alert('Settings saved! Your welcome message and preferences have been updated.');
     };
 
     const handleInvite = async () => {
@@ -76,9 +85,22 @@ export default function SettingsPage() {
                 </div>
             </div>
 
+            {/* App Preferences */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200">
+                <h2 className="text-xl font-bold mb-4 text-gray-800">App Preferences</h2>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Display Name (for Welcome message)</label>
+                <input
+                    type="text"
+                    placeholder="e.g. Master Chef"
+                    className="w-full max-w-sm p-2 border rounded-md"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                />
+            </div>
+
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Family Profiles</h1>
-                <button onClick={saveProfiles} className="btn btn-primary">Save Changes</button>
+                <button onClick={saveSettings} className="btn btn-primary">Save Changes</button>
             </div>
 
             <p className="text-gray-600">Adjust the dietary goals for each family member. The AI will use these to customize meal suggestions.</p>

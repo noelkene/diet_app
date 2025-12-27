@@ -25,8 +25,10 @@ export default function NavBar() {
     return (
         <div className="flex items-center gap-4">
             <nav className="flex gap-2 overflow-x-auto pb-1 md:pb-0">
-                <Link href="/" className={`px-4 py-2 rounded-lg text-sm transition-all whitespace-nowrap ${isActive('/')}`}>
-                    📅 Schedule
+                <Link href="/" className="flex items-center gap-2">
+                    <div className="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+                        Scantry
+                    </div>
                 </Link>
                 <Link href="/inventory" className={`px-4 py-2 rounded-lg text-sm transition-all whitespace-nowrap ${isActive('/inventory')}`}>
                     📦 Inventory

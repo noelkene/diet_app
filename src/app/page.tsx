@@ -1,24 +1,43 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { loadData, saveData } from './actions';
 import { ScheduledMeal } from '@/lib/types';
+import OnboardingChecklist from '@/components/OnboardingChecklist';
 
 export default function Home() {
+    const { data: session } = useSession();
     const [schedule, setSchedule] = useState<ScheduledMeal[]>([]);
+    const [inventoryCount, setInventoryCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Settings
+    const [displayName, setDisplayName] = useState('');
+    const [isGuideDismissed, setIsGuideDismissed] = useState(false);
+
     useEffect(() => {
-        loadData<ScheduledMeal[]>('schedule.json', [])
-            .then(data => {
-                setSchedule(data);
-                setIsLoading(false);
-            })
-            .catch(e => {
-                console.error(e);
-                setIsLoading(false);
-            });
+        Promise.all([
+            loadData<ScheduledMeal[]>('schedule.json', []),
+            loadData<any[]>('inventory.json', []),
+            loadData<any>('settings.json', {})
+        ]).then(([scheduleData, inventoryData, settingsData]) => {
+            setSchedule(scheduleData || []);
+            setInventoryCount(inventoryData?.length || 0);
+            setDisplayName(settingsData?.displayName || '');
+            setIsGuideDismissed(settingsData?.isGuideDismissed || false);
+            setIsLoading(false);
+        }).catch(e => {
+            console.error(e);
+            setIsLoading(false);
+        });
     }, []);
+
+    const dismissGuide = async () => {
+        setIsGuideDismissed(true);
+        const settings = await loadData<any>('settings.json', {});
+        await saveData('settings.json', { ...settings, isGuideDismissed: true });
+    };
 
     // Generate next 7 days
     const today = new Date();
@@ -42,12 +61,22 @@ export default function Home() {
         await saveData('schedule.json', newSchedule);
     };
 
+    // Determine Welcome Name
+    const firstName = displayName || session?.user?.name?.split(' ')[0] || 'Chef';
+
     return (
         <div className="space-y-8">
             <section className="text-center py-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back, Noel</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back, {firstName}</h1>
                 <p className="text-gray-600">Here is your meal plan for the week.</p>
             </section>
+
+            <OnboardingChecklist
+                hasInventory={inventoryCount > 0}
+                hasSchedule={schedule.length > 0}
+                isDismissed={isGuideDismissed}
+                onDismiss={dismissGuide}
+            />
 
             <section className="grid gap-4">
                 {weekDays.map((day) => {
