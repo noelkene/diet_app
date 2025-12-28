@@ -1,22 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { loadData, saveData } from './actions';
 import { ScheduledMeal } from '@/lib/types';
 import OnboardingChecklist from '@/components/OnboardingChecklist';
 
 export default function Home() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const [schedule, setSchedule] = useState<ScheduledMeal[]>([]);
     const [inventoryCount, setInventoryCount] = useState(0);
-    const [isLoading, setIsLoading] = useState(true);
+    // Loading state for DATA fetching, separate from Auth status
+    const [isDataLoading, setIsDataLoading] = useState(true);
 
     // Settings
     const [displayName, setDisplayName] = useState('');
     const [isGuideDismissed, setIsGuideDismissed] = useState(false);
 
     useEffect(() => {
+        if (status !== 'authenticated') return;
+
         Promise.all([
             loadData<ScheduledMeal[]>('schedule.json', []),
             loadData<any[]>('inventory.json', []),
@@ -26,12 +29,12 @@ export default function Home() {
             setInventoryCount(inventoryData?.length || 0);
             setDisplayName(settingsData?.displayName || '');
             setIsGuideDismissed(settingsData?.isGuideDismissed || false);
-            setIsLoading(false);
+            setIsDataLoading(false);
         }).catch(e => {
             console.error(e);
-            setIsLoading(false);
+            setIsDataLoading(false);
         });
-    }, []);
+    }, [status]);
 
     const dismissGuide = async () => {
         setIsGuideDismissed(true);
@@ -60,6 +63,63 @@ export default function Home() {
         setSchedule(newSchedule);
         await saveData('schedule.json', newSchedule);
     };
+
+    // --- RENDER LOGIC ---
+
+    if (status === 'loading') {
+        return <div className="p-12 text-center text-gray-500">Loading Scantry...</div>;
+    }
+
+    // 1. LANDING PAGE (Unauthenticated)
+    if (status === 'unauthenticated') {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-12">
+
+                <div className="space-y-4 max-w-2xl">
+                    <h1 className="text-5xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent pb-2">
+                        Scantry
+                    </h1>
+                    <p className="text-xl text-teal-800 font-medium tracking-wide uppercase">Scan. Plan. Eat.</p>
+                    <p className="text-gray-600 text-lg leading-relaxed pt-4">
+                        The AI-powered kitchen assistant that helps you organize your fridge,
+                        reduce waste, and eat better.
+                    </p>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6 text-left max-w-4xl w-full">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="text-3xl mb-3">📦</div>
+                        <h3 className="font-bold text-gray-900 mb-2">Smart Inventory</h3>
+                        <p className="text-sm text-gray-600">Snap a photo of your receipt or fridge. AI instantly tracks what you have.</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="text-3xl mb-3">🍽️</div>
+                        <h3 className="font-bold text-gray-900 mb-2">Meal Planning</h3>
+                        <p className="text-sm text-gray-600">Get personalized recipe suggestions based on ingredients you already own.</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div className="text-3xl mb-3">🛒</div>
+                        <h3 className="font-bold text-gray-900 mb-2">Auto Shopping List</h3>
+                        <p className="text-sm text-gray-600">Run out of milk? It's automatically added to your list for next time.</p>
+                    </div>
+                </div>
+
+                <div className="bg-teal-50 p-8 rounded-2xl w-full max-w-md border border-teal-100">
+                    <p className="font-semibold text-gray-700 mb-4">Ready to simplify your kitchen?</p>
+                    <button
+                        onClick={() => signIn('google')}
+                        className="w-full btn bg-teal-600 text-white text-lg py-3 hover:bg-teal-700 shadow-lg transition-transform transform hover:-translate-y-1"
+                    >
+                        Sign In with Google
+                    </button>
+                    <p className="text-xs text-gray-500 mt-4">Safe, secure, and private authentication.</p>
+                </div>
+
+            </div>
+        );
+    }
+
+    // 2. DASHBOARD (Authenticated)
 
     // Determine Welcome Name
     const firstName = displayName || session?.user?.name?.split(' ')[0] || 'Chef';
