@@ -16,6 +16,7 @@
     "dotenv": "^17.2.3",
     "next": "latest",
     "next-auth": "^4.24.13",
+    "pdf-parse": "^2.4.5",
     "react": "latest",
     "react-dom": "latest"
   },

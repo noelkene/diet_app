@@ -310,6 +310,36 @@ export default function RecipesPage() {
                                 )}
                             </div>
 
+
+                            {/* Super Gut & Nutrition Info */}
+                            {(recipe.netCarbs !== undefined || recipe.superGutBenefit || recipe.calories) && (
+                                <div className="mb-6 p-4 bg-teal-50 rounded-lg border border-teal-100 text-sm">
+                                    {recipe.superGutBenefit && (
+                                        <div className="mb-3">
+                                            <span className="font-bold text-teal-800">🦠 Super Gut Benefit: </span>
+                                            <span className="text-teal-700 block mt-1 leading-relaxed">{recipe.superGutBenefit}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex flex-wrap gap-4 pt-2 border-t border-teal-100 mt-2">
+                                        {recipe.netCarbs !== undefined && (
+                                            <div className="flex items-center gap-1">
+                                                <span className="font-semibold text-gray-700">Net Carbs:</span>
+                                                <span className={`px-2 py-0.5 rounded text-xs font-bold ${recipe.netCarbs <= 15 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                    {recipe.netCarbs}g
+                                                </span>
+                                            </div>
+                                        )}
+                                        {recipe.calories && (
+                                            <div className="flex gap-4 text-xs text-gray-600 items-center">
+                                                <span title="Wife">👩 <b>{recipe.calories.wife}</b> kcal</span>
+                                                <span title="Son">👦 <b>{recipe.calories.son}</b> kcal</span>
+                                                <span title="Dad">👨 <b>{recipe.calories.dad}</b> kcal</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="mb-8">
                                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                                     <span className="bg-teal-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">1</span>

@@ -81,9 +81,28 @@ export async function generateMealPlanAction(inventory: Ingredient[], profilesSt
         ? `AVOID recipes similar to or containing these rejected titles: ${rejectedRecipes.join(', ')}.`
         : '';
 
+    // Load Super Gut Rules
+    let rulesContext = "";
+    try {
+        const rulesData = await import('./super_gut_data.json');
+        rulesContext = `
+        Super Gut Context:
+        - Rules: ${rulesData.rules.join('; ')}
+        - Banned: ${rulesData.banned_ingredients.join(', ')}
+        - Allowed: ${rulesData.allowed_ingredients.join(', ')}
+        - 15g Net Carb Limit is HARD LIMIT per serving.
+        - Prioritize "Super Gut" recipes (e.g. using prebiotic fibers, fermented foods) where valid.
+        `;
+    } catch (e) {
+        console.error("Could not load super gut data", e);
+        rulesContext = "Limit: 15g Net Carbs per meal. Avoid grains, sugars, processed foods.";
+    }
+
     const prompt = `
-    You are a meal planner for a family with specific dietary needs.
+    You are a specialized "Super Gut" meal planner.
     Inventory: ${inventoryList}
+    
+    ${rulesContext}
 
     Profiles:
     ${profileContext}
@@ -95,12 +114,14 @@ export async function generateMealPlanAction(inventory: Ingredient[], profilesSt
     Suggest 10 distinct dinner recipes that can be made primarily from the inventory (assume basic staples like oil, spices, flour availability).
     
     IMPORTANT Constraints:
-    1. Variety: Do NOT use the same main ingredient for more than 2 recipes (e.g. max 2 egg dishes, max 2 chicken dishes).
-    2. Freshness: Prioritize using fresh produce (vegetables, fruit) from the inventory over pantry staples to prevent spoilage.
-    3. Profiles: Each recipe must accommodate the profiles (e.g. by having modular carbs or naturally low carb base).
-
-    For each recipe, explicitly verify if it meets the stored needs.
-    Include step-by-step cooking instructions.
+    1. Variety: Do NOT use the same main ingredient for more than 2 recipes.
+    2. Freshness: Prioritize using fresh produce.
+    3. Super Gut Compliance: Ensure recipes adhere to the 15g net carb limit per serving.
+    
+    For each recipe, calculate:
+    - Calories per person (customized portion size based on their profile needs).
+    - Net Carbs per serving.
+    - Specific "Super Gut Benefit" (why it's good for the microbiome).
 
     Return ONLY a JSON array of objects:
     [{
@@ -109,9 +130,12 @@ export async function generateMealPlanAction(inventory: Ingredient[], profilesSt
         "description": "Short description",
         "ingredients": ["list", "of", "ingredients"],
         "instructions": ["step 1", "step 2", "step 3"],
-        "tags": ["Low Carb", "Hearty", etc],
+        "tags": ["Low Carb", "Super Gut", etc],
         "suitability": { "wife": true, "son": true, "dad": true },
-        "reheatFriendly": true
+        "reheatFriendly": true,
+        "calories": { "wife": 400, "son": 800, "dad": 500 },
+        "netCarbs": 12,
+        "superGutBenefit": "Contains prebiotic fiber from onions to feed beneficial bacteria."
     }]
     Do not add markdown formatting.
     `;
@@ -274,5 +298,71 @@ export async function parseRecipeImageAction(formData: FormData): Promise<Recipe
     } catch (error) {
         console.error('Vertex AI Parse Image Error:', error);
         return null;
+    }
+}
+
+export async function analyzeMealAction(formData: FormData): Promise<{ netCarbs: number, compliant: boolean, notes: string }> {
+    const file = formData.get('image') as File;
+    if (!file) throw new Error('No image provided');
+
+    // Load Super Gut Rules
+    // Assuming we can read the JSON file in this server action context
+    let rulesContext = "";
+    try {
+        const rulesData = await import('./super_gut_data.json');
+        rulesContext = `
+        Super Gut Rules:
+        - Rules: ${rulesData.rules.join('; ')}
+        - Banned: ${rulesData.banned_ingredients.join(', ')}
+        - Allowed: ${rulesData.allowed_ingredients.join(', ')}
+        - 15g Net Carb Limit is HARD LIMIT.
+        `;
+    } catch (e) {
+        console.error("Could not load super gut data", e);
+        rulesContext = "Limit: 15g Net Carbs per meal. Avoid grains, sugars, processed foods.";
+    }
+
+    const model = vertexAI.getGenerativeModel({ model: modelName });
+    const arrayBuffer = await file.arrayBuffer();
+    const base64Data = Buffer.from(arrayBuffer).toString('base64');
+
+    const prompt = `
+    Analyze this meal image for compliance with the "Super Gut" diet.
+    ${rulesContext}
+
+    Task:
+    1. Identify all visible ingredients.
+    2. Estimate total NET CARBS (Total Carbs - Fiber).
+    3. Determine if it is compliant (<= 15g Net Carbs AND no banned ingredients).
+    4. Provide brief notes/feedback.
+
+    Return ONLY a JSON object:
+    {
+        "netCarbs": 12,
+        "compliant": true,
+        "notes": "Looks good! The avocado adds healthy fats and fiber."
+    }
+    Do not add markdown formatting.
+    `;
+
+    try {
+        const result = await model.generateContent({
+            contents: [{
+                role: 'user',
+                parts: [
+                    { text: prompt },
+                    { inlineData: { mimeType: file.type, data: base64Data } }
+                ]
+            }]
+        });
+        const response = await result.response;
+        const resText = response.candidates?.[0].content.parts[0].text;
+        if (!resText) throw new Error('No response');
+
+        const cleanText = resText.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleanText);
+    } catch (error) {
+        console.error('Vertex AI Meal Analysis Error:', error);
+        return { netCarbs: 0, compliant: false, notes: "Error analyzing meal." };
     }
 }

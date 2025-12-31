@@ -1,0 +1,187 @@
+{
+  "rules": [
+    "Aim for a \"sugar- and grain-free life.\"",
+    "Use prolonged fermentation times (e.g., 36-48 hours) and add prebiotic fibers to significantly increase bacterial counts in fermented foods.",
+    "For maximum health effects from fermented foods, make monoculture yogurts (using a single bacterial species or strain) to achieve the highest bacterial numbers.",
+    "When selecting commercial ingredients for fermentation (e.g., coconut milk, salsas, pureed fruits), choose products without preservatives, emulsifiers, added sugars, xanthan gum, or gellan gum (guar gum is acceptable for coconut milk).",
+    "Ferment pureed fruits for at least 72 hours to maximally reduce their sugar content.",
+    "Listen to your body's appetite signals for when to eat; do not eat simply because it is a scheduled mealtime.",
+    "Include a source of prebiotic fiber in every meal, targeting 20 grams or more per day long-term.",
+    "For pregnant women, do not consume L. reuteri yogurt as a monoculture; instead, use the L. reuteri mixed-culture yogurt to avoid excessive oxytocin boosts.",
+    "During SIBO/SIFO protocols, combine antifungal efforts with SIBO treatment, as fungal overgrowth often accompanies SIBO.",
+    "When using essential oils in SIFO protocols, never consume them directly or undiluted; always dilute them in a food oil (e.g., olive, avocado, or coconut oil).",
+    "If using an AIRE device for H2 breath testing, stop consuming L. reuteri yogurt for at least two weeks prior to testing to avoid false positive readings.",
+    "When choosing curcumin supplements, opt for non-absorbed forms without absorption enhancers (like bioperine or piperine) to ensure it stays within the GI tract for local effects.",
+    "For H. Pylori eradication, confirm success with a stool antigen test after treatment (antibody tests remain positive)."
+  ],
+  "banned_ingredients": [
+    "Sugar (sucrose, added sugar, high-fructose corn syrup)",
+    "Grains",
+    "Carrageenan",
+    "Xanthan gum (unless explicitly allowed as guar gum in specific contexts like coconut milk)",
+    "Gellan gum",
+    "Casein beta A1 (encouraged to use A2 dairy alternatives)",
+    "Synthetic emulsifying agents",
+    "Preservatives",
+    "Bioperine (in curcumin supplements)",
+    "Piperine (in curcumin supplements)"
+  ],
+  "allowed_ingredients": [
+    "Dairy (organic half-and-half, whole milk, heavy cream, A2 dairy, goat's milk, sheep's milk)",
+    "Non-dairy milks (canned coconut milk without undesirable additives)",
+    "Probiotics/Starter Cultures (Lactobacillus reuteri strains DSM 17938, ATCC PTA 6475, SD 5865, NCIMB 30242; Bacillus coagulans GBI-30,6086; Lactobacillus gasseri BNR17; Lactobacillus casei Shirota; Bifidobacterium infantis EVC001; Lactobacillus helveticus R0052; Bifidobacterium longum R0175; Lactobacillus rhamnosus GG; Lactobacillus plantarum 299v; multispecies probiotics; commercial kefir; Saccharomyces boulardii)",
+    "Prebiotic Fibers (inulin powder, raw potato starch, acacia fiber, fructooligosaccharides (FOS), galactooligosaccharides, glucomannan, pectin)",
+    "Safe Sweeteners (stevia, allulose, erythritol, xylitol, monk fruit)",
+    "Oils/Fats (extra-virgin olive oil, coconut oil, butter, avocado oil)",
+    "Proteins (chicken, beef, lamb, pork, eggs, salmon)",
+    "Vegetables (dandelion greens, carrots, zucchini, eggplant, onion, turnip, mushrooms, bell peppers, asparagus, leeks, white beans, cucumbers, kohlrabi, hearts of palm, jicama, celery, daikon radish, spinach)",
+    "Fruits (strawberries, blueberries, raspberries, blackberries, green unripe bananas, mangoes, peaches, key lime)",
+    "Nuts/Seeds (almond meal/flour, ground psyllium seed, ground golden flaxseed, pine nuts, sesame seeds, pecans, walnuts, nigella sativa seeds)",
+    "Herbs/Spices (rosemary, oregano, cinnamon, clove, ginger, nutmeg, turmeric, cumin, onion powder, garlic, dill, mint, cilantro, black pepper, bay leaf, coriander seeds, red pepper flakes, garam masala, thyme)",
+    "Other (collagen hydrolysates, shirataki noodles, bone broth/stock, white wine vinegar, apple cider vinegar, Pepto Bismol, Vitamin C, N-acetyl cysteine (NAC), mastic gum, guar gum (for coconut milk), unfermented whey for next batch)"
+  ],
+  "recipes": [
+    {
+      "title": "Lactobacillus Reuteri Yogurt",
+      "ingredients": [
+        "10 Gastrus tablets, crushed (or the contents of one capsule of Osfortis)",
+        "2 tablespoons prebiotic fiber (inulin or raw potato starch)",
+        "1 quart half-and-half or other liquid"
+      ],
+      "instructions": [
+        "Pulverize 10 Gastrus tablets (or open Osfortis capsule).",
+        "In a medium to large bowl, combine probiotic, prebiotic fiber, and 2 tablespoons of half-and-half to make a slurry; stir until well mixed.",
+        "Stir in the remaining half-and-half.",
+        "Cover lightly (e.g., with plastic wrap), place in fermenting device, and ferment at 100°F for 36 hours.",
+        "To make future batches, use 2 tablespoons of curds or whey from a prior batch."
+      ],
+      "notes": "This is a core recipe for 'age-reversing' effects, smoother skin, increased oxytocin, and SIBO/SIFO protection. It emphasizes prolonged fermentation and added prebiotic fiber to achieve significantly higher bacterial counts than commercial yogurts, making it uniquely 'Super Gut'."
+    },
+    {
+      "title": "Super Gut SIBO Yogurt",
+      "ingredients": [
+        "10 BioGaia Gastrus tablets, crushed (total 2 billion CFUs), or 2 tablespoons of L. reuteri yogurt (curds and/or whey)",
+        "1 capsule Lactobacillus gasseri BNR17 (10 billion CFUs), or 2 tablespoons of L. gasseri yogurt (curds and/or whey)",
+        "1 capsule Bacillus coagulans GBI-30,6086 (2 billion CFUs), or 2 tablespoons of B. coagulans yogurt (curds and/or whey)",
+        "2 tablespoons prebiotic fiber (inulin or raw potato starch)",
+        "1 quart half-and-half or other liquid"
+      ],
+      "instructions": [
+        "In a medium-sized bowl, combine the starting probiotics, prebiotic fiber, and 2 tablespoons of organic half-and-half to make a slurry; stir until well mixed.",
+        "Stir in the remaining half-and-half.",
+        "Cover lightly (e.g., with plastic wrap), place in fermenting device, and ferment at 106°F for 36 hours.",
+        "To make future batches, use 2 tablespoons of curds or whey from a prior batch."
+      ],
+      "notes": "This recipe is specifically designed to address SIBO by combining species known for anti-pathogenic effects and colonization of the upper GI tract, potentially serving as an alternative to herbal antibiotics. Fermenting multiple species together limits microbial counts to avoid excessive die-off."
+    },
+    {
+      "title": "Coconut Milk L. reuteri Yogurt",
+      "ingredients": [
+        "1 (13.5-ounce) can coconut milk (nothing but coconut and water, no thickeners except guar gum)",
+        "3/4 teaspoon guar gum",
+        "2 tablespoons sugar",
+        "1 tablespoon raw potato starch",
+        "1–2 tablespoons L. reuteri yogurt, curds and/or whey, or 10 Gastrus tablets, crushed"
+      ],
+      "instructions": [
+        "In a small or medium-sized saucepan, heat coconut milk over medium heat to 180°F or until it just begins to boil; remove from heat.",
+        "Allow to cool 5 minutes.",
+        "Add guar gum, sugar, and potato starch to the cooled coconut milk and blend with a stick blender or in a blender for a minimum of 1 minute until thickened.",
+        "Allow the mixture to cool to 100°F (or room temperature), then mix in the L. reuteri yogurt (or crushed Gastrus tablets).",
+        "Ferment for 48 hours at 100°F."
+      ],
+      "notes": "This recipe demonstrates how to adapt the Super Gut fermentation principles to a dairy-free vehicle, addressing common issues like separation with specific heating and blending steps. The sugar is consumed by microbes during the 48-hour fermentation."
+    },
+    {
+      "title": "Herbed Focaccia Bread",
+      "ingredients": [
+        "1 cup shredded mozzarella or other cheese",
+        "3 cups almond meal/flour",
+        "1/4 cup ground psyllium seed",
+        "1½ teaspoons sea salt or kosher salt, divided",
+        "1 teaspoon onion powder",
+        "1 tablespoon garlic paste or 5 cloves garlic, minced",
+        "1 tablespoon rosemary, chopped, or 1½ teaspoons dried rosemary",
+        "1 tablespoon oregano, chopped (stems removed), or 1½ teaspoons dried oregano",
+        "1/2 cup black or kalamata olives, diced",
+        "1/4 cup sun-dried tomatoes (preferably in oil), diced",
+        "2 large eggs",
+        "1/2 cup extra-virgin olive oil, divided"
+      ],
+      "instructions": [
+        "Preheat oven to 375°F.",
+        "In medium bowl, combine cheese, almond meal/flour, psyllium, 1/2 teaspoon salt, onion powder, garlic, rosemary, oregano, olives, and sun-dried tomatoes; mix well. Set aside.",
+        "In a small bowl, whisk the eggs, then stir in all but 1 tablespoon of olive oil. Pour into almond meal/flour mixture and mix thoroughly.",
+        "Grease an 11x17-inch shallow baking pan. Place dough on pan and shape into a large rectangle (approx. 1/2-inch thick).",
+        "Bake for 12 minutes. Remove from oven.",
+        "Make small depressions in surface with blunt handle of a spoon. Brush with remaining olive oil and sprinkle with remaining salt.",
+        "Return to oven for an additional 8–10 minutes until lightly browned.",
+        "Slice into six pieces and remove carefully."
+      ],
+      "notes": "This is a grain-free bread alternative using almond flour and psyllium, incorporating herbs (rosemary, oregano, garlic, onion) for their specific bowel flora benefits and anti-microbial properties, aligning with the Super Gut philosophy of food as medicine."
+    },
+    {
+      "title": "Clove Green Tea",
+      "ingredients": [
+        "2 cups water",
+        "1 tablespoon whole cloves",
+        "1 teabag green tea (high in catechins, e.g., matcha)",
+        "1 teaspoon FOS powder",
+        "2 teaspoons allulose (optional)",
+        "Additional sweetener to taste (optional)",
+        "1 cinnamon stick (optional)"
+      ],
+      "instructions": [
+        "In a small saucepan, combine water and whole cloves; bring to a boil.",
+        "Reduce heat and simmer for 10 minutes, covered.",
+        "Add teabag in the last 1–2 minutes of simmering, then remove from heat. Discard teabag.",
+        "Stir in FOS, optional allulose, other sweetener, and optional cinnamon stick. Serve or sip throughout the day."
+      ],
+      "notes": "This 'mucus-building powerhouse' tea is designed to repair and maintain the intestinal mucus barrier, and aid in dysbiosis/SIBO/SIFO management. It combines eugenol from cloves (mucus-increasing), green tea catechins (protein cross-linking), and FOS (Akkermansia-stimulating)."
+    },
+    {
+      "title": "Dandelion Greens and Raw Potato Salad with Avocado Lime Dressing",
+      "ingredients": [
+        "Salad:",
+        "8 ounces dandelion greens",
+        "1 medium raw white potato, quartered and thinly sliced",
+        "1 red onion, halved and thinly sliced",
+        "4 ounces white button mushrooms, sliced",
+        "4 hard-boiled eggs, sliced",
+        "5–6 strips bacon, cooked, drained, and broken or chopped",
+        "Dressing:",
+        "2 medium avocados, pitted, skin removed",
+        "1/2 cup extra-virgin olive oil",
+        "1/4 cup white wine vinegar",
+        "1/4 cup fresh cilantro, coarsely chopped",
+        "1 clove garlic, minced, or 1 teaspoon dried garlic powder",
+        "Juice of one small lime",
+        "1/2 teaspoon salt",
+        "Sweetener equivalent to 1 tablespoon sugar",
+        "3/4 cup water"
+      ],
+      "instructions": [
+        "Salad: In a large bowl, combine dandelion greens, potato, onion, mushrooms, eggs, and bacon. Toss and top with dressing.",
+        "Dressing: In a blender or food processor, combine avocado, oil, vinegar, cilantro, garlic, lime juice, salt, sweetener, and water. Blend until uniformly mixed. Use immediately or store in an airtight container in the refrigerator (best consumed within 48 hours)."
+      ],
+      "notes": "This salad is highlighted for packing multiple health benefits, including diverse prebiotic fibers from dandelion greens, raw potato, onion, garlic, and mushrooms, plus pectin from avocado, and antibacterial effects from cilantro, all crucial for microbiome health."
+    }
+  ],
+  "tips": [
+    "This book is for reference, not a medical manual; it is not a substitute for doctor-prescribed treatment. Seek competent medical care for health problems.",
+    "Feel free to experiment with recipes and ingredients, as individual responses to fermented foods may vary.",
+    "Don’t be discouraged if your first batch of yogurt separates into curds and whey; this is typical, and subsequent batches tend to be richer and thicker.",
+    "To make future batches of yogurt, use 2 tablespoons of curds or whey from a prior batch as a starter.",
+    "Dairy products, especially organic half-and-half, are often the most forgiving and least problematic vehicle for fermentation.",
+    "Choose specific prebiotic fibers based on the bacterial species you are fermenting (e.g., raw potato starch/sucrose for Bifidobacterium species, inulin for others).",
+    "Invest in a yogurt-making device that allows variable temperature and fermentation time (ideally within the range of 97°F to 125°F) to accommodate different bacterial species.",
+    "Always verify your fermentation device's actual temperature with a thermometer, as displayed temperatures can be inaccurate and impair fermentation.",
+    "When using Instant Pots for fermentation, do not preheat pasteurized high-fat dairy (like half-and-half) as it does not benefit from preheating like skim or low-fat milks.",
+    "Minimize forceful mechanical agitation (e.g., in blenders or ice cream makers) to preserve live probiotic microbes in fermented foods and smoothies.",
+    "Listen to your body's hunger signals and eat when genuinely hungry, rather than strictly adhering to scheduled meal times; many find two meals a day sufficient on this lifestyle.",
+    "Include examples of prebiotic-rich foods such as beans, peas, legumes, asparagus, sliced leeks, sliced avocado, dandelion greens, and thinly sliced raw potato in your meals.",
+    "When following SIBO/SIFO protocols, never consume essential oils directly or undiluted; always dilute them in a food oil and gradually build up dosage.",
+    "Saccharomyces boulardii (a beneficial fungus) is effective for recovering from diarrhea after antibiotics but cannot be used to make yogurt.",
+    "Lactobacillus plantarum 299v, while beneficial for IBS symptoms and having antibacterial/mucus-stimulating effects, does not colonize the upper GI tract, only the colon."
+  ]
+}

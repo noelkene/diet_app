@@ -16,6 +16,13 @@ export interface Recipe {
         son: boolean;
         dad: boolean;
     };
+    calories?: {
+        wife: number;
+        son: number;
+        dad: number;
+    };
+    netCarbs?: number; // Estimated per serving
+    superGutBenefit?: string; // Why is this good for the gut?
     reheatFriendly: boolean;
 }
 
@@ -43,4 +50,32 @@ export const DEFAULT_PROFILES: UserProfile[] = [
     { id: 'son', name: 'Hiro (Son)', dietaryNeeds: 'High calorie, filling (Teenager)' },
     { id: 'dad', name: 'Noel (Me)', dietaryNeeds: 'Weight loss focused' }
 ];
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
+export interface SuperGutAnalysis {
+    netCarbs: number;
+    compliant: boolean; // <= 15g net carbs
+    notes: string;
+}
+
+export interface MealLog {
+    id: string;
+    date: string; // YYYY-MM-DD
+    slot: MealType;
+    recipeTitle?: string; // Optional if ad-hoc
+    imageUrl?: string;
+    description?: string; // "Leftover steak"
+    attendees: UserProfileKey[]; // Who ate this?
+    analysis?: SuperGutAnalysis;
+}
+
+// Updated from simple interface to support slots
+export interface ScheduledMeal {
+    date: string;
+    slot: MealType;
+    recipeId: string;
+    recipeTitle: string;
+    attendees?: UserProfileKey[]; // Who is this planned for?
+}
 

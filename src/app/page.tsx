@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import { loadData, saveData } from './actions';
-import { ScheduledMeal } from '@/lib/types';
+import { ScheduledMeal, MealLog, MealType } from '@/lib/types';
 import OnboardingChecklist from '@/components/OnboardingChecklist';
+import MealLogger from '@/components/MealLogger';
 
 export default function Home() {
     const { data: session, status } = useSession();
@@ -16,6 +17,15 @@ export default function Home() {
     // Settings
     const [displayName, setDisplayName] = useState('');
     const [isGuideDismissed, setIsGuideDismissed] = useState(false);
+
+    // --- LOGGING ---
+    const [mealLogs, setMealLogs] = useState<MealLog[]>([]);
+
+    useEffect(() => {
+        if (status === 'authenticated') {
+            loadData<MealLog[]>('history.json', []).then(data => setMealLogs(data || []));
+        }
+    }, [status]);
 
     useEffect(() => {
         if (status !== 'authenticated') return;
@@ -36,6 +46,17 @@ export default function Home() {
         });
     }, [status]);
 
+    const handleLogMeal = async (logData: any) => {
+        const newLog: MealLog = {
+            id: Date.now().toString(),
+            ...logData
+        };
+        const updatedLogs = [newLog, ...mealLogs];
+        setMealLogs(updatedLogs);
+        await saveData('history.json', updatedLogs);
+        alert('Meal logged successfully!');
+    };
+
     const dismissGuide = async () => {
         setIsGuideDismissed(true);
         const settings = await loadData<any>('settings.json', {});
@@ -54,6 +75,8 @@ export default function Home() {
             formatted: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         };
     });
+
+    const todayStr = today.toISOString().split('T')[0];
 
     const getMealForDay = (dateStr: string) => schedule.find(s => s.date === dateStr);
 
@@ -128,7 +151,7 @@ export default function Home() {
         <div className="space-y-8">
             <section className="text-center py-8">
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back, {firstName}</h1>
-                <p className="text-gray-600">Here is your meal plan for the week.</p>
+                <p className="text-gray-600">Track your Super Gut progress today.</p>
             </section>
 
             <OnboardingChecklist
@@ -138,44 +161,65 @@ export default function Home() {
                 onDismiss={dismissGuide}
             />
 
-            <section className="grid gap-4">
-                {weekDays.map((day) => {
-                    const meal = getMealForDay(day.dateStr);
-                    return (
-                        <div key={day.dateStr} className={`card flex flex-col sm:flex-row items-center p-4 border-l-4 ${meal ? 'border-teal-500' : 'border-gray-200'}`}>
-                            <div className="w-full sm:w-32 flex-shrink-0 text-center sm:text-left mb-2 sm:mb-0">
-                                <p className="font-bold text-gray-900">{day.dayName}</p>
-                                <p className="text-sm text-gray-500">{day.formatted}</p>
-                            </div>
+            {/* TODAY'S SUPER GUT LOG */}
+            <section>
+                <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-xl font-bold text-gray-800">Today's Meals</h2>
+                    <span className="text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-medium">Super Gut Tracker</span>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                    {(['breakfast', 'lunch', 'dinner'] as MealType[]).map(slot => (
+                        <MealLogger
+                            key={slot}
+                            slot={slot}
+                            date={todayStr}
+                            onLog={handleLogMeal}
+                        />
+                    ))}
+                </div>
+            </section>
 
-                            <div className="flex-grow text-center sm:text-left">
-                                {meal ? (
-                                    <div>
-                                        <p className="font-medium text-lg text-teal-800">{meal.recipeTitle}</p>
-                                        <a href="/recipes" className="text-xs text-gray-400 hover:text-teal-600 underline">View in Recipes</a>
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-400 italic">Not planned yet</p>
-                                )}
-                            </div>
+            <section className="pt-8 border-t border-gray-100">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Weekly Plan</h2>
+                <div className="grid gap-4">
+                    {weekDays.map((day) => {
+                        const meal = getMealForDay(day.dateStr);
+                        return (
+                            <div key={day.dateStr} className={`card flex flex-col sm:flex-row items-center p-4 border-l-4 ${meal ? 'border-teal-500' : 'border-gray-200'}`}>
+                                <div className="w-full sm:w-32 flex-shrink-0 text-center sm:text-left mb-2 sm:mb-0">
+                                    <p className="font-bold text-gray-900">{day.dayName}</p>
+                                    <p className="text-sm text-gray-500">{day.formatted}</p>
+                                </div>
 
-                            <div className="mt-2 sm:mt-0 ml-auto">
-                                {meal ? (
-                                    <button
-                                        onClick={() => removeFromSchedule(day.dateStr)}
-                                        className="px-3 py-1 text-xs text-red-500 hover:bg-red-50 rounded"
-                                    >
-                                        Clear
-                                    </button>
-                                ) : (
-                                    <a href="/recipes" className="btn bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">
-                                        + Add Meal
-                                    </a>
-                                )}
+                                <div className="flex-grow text-center sm:text-left">
+                                    {meal ? (
+                                        <div>
+                                            <p className="font-medium text-lg text-teal-800">{meal.recipeTitle}</p>
+                                            <a href="/recipes" className="text-xs text-gray-400 hover:text-teal-600 underline">View in Recipes</a>
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-400 italic">Not planned yet</p>
+                                    )}
+                                </div>
+
+                                <div className="mt-2 sm:mt-0 ml-auto">
+                                    {meal ? (
+                                        <button
+                                            onClick={() => removeFromSchedule(day.dateStr)}
+                                            className="px-3 py-1 text-xs text-red-500 hover:bg-red-50 rounded"
+                                        >
+                                            Clear
+                                        </button>
+                                    ) : (
+                                        <a href="/recipes" className="btn bg-gray-100 text-gray-600 text-sm hover:bg-gray-200">
+                                            + Add Meal
+                                        </a>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )
-                })}
+                        )
+                    })}
+                </div>
             </section>
 
             <div className="text-center pt-8 border-t border-gray-200">
